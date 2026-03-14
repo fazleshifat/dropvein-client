@@ -28,6 +28,7 @@ import Blogs from "../pages/Blogs/Blogs";
 import BlogDetails from "../pages/BlogDetails/BlogDetails";
 import SearchDonors from "../pages/SearchDonors/SearchDonor";
 import FundingPage from "../pages/FundingPage/FundingPage";
+import Inbox from "../pages/Dashboard/AdminDashboard/Inbox/Inbox";
 
 
 export const router = createBrowserRouter([
@@ -190,6 +191,13 @@ export const router = createBrowserRouter([
                 path: 'content-management/add-blog',
                 element: <SpecialRoute>
                     <AddBlog></AddBlog>
+                </SpecialRoute>
+            },
+
+            {
+                path: 'inbox',
+                element: <SpecialRoute>
+                    <Inbox />
                 </SpecialRoute>
             },
 

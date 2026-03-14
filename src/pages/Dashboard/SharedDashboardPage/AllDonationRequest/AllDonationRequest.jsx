@@ -1,16 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
-import useAxios from '../../../../hooks/useAxios';
 import { useNavigate } from 'react-router';
 import useUserRole from '../../../../hooks/userUserRole';
 import Spinner from '../../../../components/Spinner';
 import useAxiosSecure from '../../../../hooks/useAxiosSecure';
+import { FaEye, FaEdit, FaTrash, FaCheck, FaTimes, FaTint, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 const statuses = ['pending', 'inprogress', 'done', 'cancelled'];
 
 const AllDonationRequests = () => {
-    const axios = useAxios();
     const axiosSecure = useAxiosSecure();
     const { role } = useUserRole();
     const queryClient = useQueryClient();
@@ -34,16 +33,12 @@ const AllDonationRequests = () => {
     });
 
     const { mutate: updateStatus } = useMutation({
-        mutationFn: async ({ id, status }) => {
-            return await axiosSecure.patch(`/donation-requests/${id}/status`, { status });
-        },
+        mutationFn: async ({ id, status }) => axiosSecure.patch(`/donation-requests/${id}/status`, { status }),
         onSuccess: () => {
             queryClient.invalidateQueries(['donationRequests']);
             Swal.fire('Updated!', 'Donation status has been updated.', 'success');
         },
-        onError: () => {
-            Swal.fire('Error', 'Could not update status', 'error');
-        }
+        onError: () => Swal.fire('Error', 'Could not update status', 'error')
     });
 
     const needActionForVolunteer = useMemo(() => {
@@ -53,16 +48,14 @@ const AllDonationRequests = () => {
     const handleStatusChangeByAdmin = (id, status) => {
         Swal.fire({
             title: 'Are you sure?',
-            text: `You want to change status to ${status}?`,
+            text: `Change status to ${status}?`,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#16a34a',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes, update it!'
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, update!'
         }).then((result) => {
-            if (result.isConfirmed) {
-                updateStatus({ id, status });
-            }
+            if (result.isConfirmed) updateStatus({ id, status });
         });
     };
 
@@ -72,6 +65,8 @@ const AllDonationRequests = () => {
             text: 'This donation request will be deleted!',
             icon: 'warning',
             showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
             confirmButtonText: 'Yes, delete it!',
         }).then(async (result) => {
             if (result.isConfirmed) {
@@ -80,7 +75,6 @@ const AllDonationRequests = () => {
                     Swal.fire('Deleted!', 'Donation request has been deleted.', 'success');
                     refetch();
                 } catch (err) {
-                    console.error(err);
                     Swal.fire('Error', 'Failed to delete request.', 'error');
                 }
             }
@@ -90,12 +84,12 @@ const AllDonationRequests = () => {
     const handleStatusUpdateAfterInprogress = async (id, status) => {
         Swal.fire({
             title: 'Are you sure?',
-            text: `Do you want to mark this request as ${status}?`,
+            text: `Mark this request as ${status}?`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: `Yes, mark as ${status}`,
             confirmButtonColor: status === 'done' ? '#16a34a' : '#d97706',
-            cancelButtonColor: '#d33',
+            cancelButtonColor: '#6b7280',
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
@@ -112,150 +106,141 @@ const AllDonationRequests = () => {
     const total = donationRequests?.total || 0;
     const totalPages = Math.ceil(total / limit);
 
-    if (isLoading) {
-        return <Spinner></Spinner>;
-    }
+    if (isLoading) return <Spinner />;
+
+    const statusColors = {
+        pending: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
+        inprogress: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+        done: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+        cancelled: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+    };
+
+    const filterColors = {
+        all: 'from-gray-600 to-gray-500',
+        pending: 'from-amber-500 to-amber-600',
+        inprogress: 'from-blue-500 to-blue-600',
+        done: 'from-green-500 to-green-600',
+        cancelled: 'from-red-500 to-red-600',
+    };
 
     return (
-        <div className="p-4 transition-all">
-            <h2 className="text-2xl font-bold mb-6">All Blood Donation Requests 🩸</h2>
+        <div className="p-6 lg:p-8 space-y-6">
+            {/* Header */}
+            <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">All Blood Donation Requests</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{total} total requests</p>
+            </div>
 
-            {/* Filter Buttons */}
-            <div className="flex flex-wrap gap-2 mb-4">
-                <button
-                    onClick={() => setFilterStatus('all')}
-                    className={`px-4 py-1 rounded-full border-2 border-gray-400 ${filterStatus === 'all' ? 'bg-blue-600 text-white' : 'bg-base-100'}`}
-                >
-                    All
-                </button>
-                {statuses.map(status => (
+            {/* Filter Tabs */}
+            <div className="flex flex-wrap gap-2">
+                {['all', ...statuses].map(status => (
                     <button
                         key={status}
-                        onClick={() => {
-                            setFilterStatus(status);
-                            setCurrentPage(1);
-                        }}
-                        className={`px-4 py-1 rounded-full border-2 border-gray-400 capitalize ${filterStatus === status ? 'bg-blue-600 text-white' : 'bg-base-100'}`}
+                        onClick={() => { setFilterStatus(status); setCurrentPage(1); }}
+                        className={`px-4 py-2 rounded-xl text-xs font-semibold capitalize transition-all duration-200 ${filterStatus === status
+                            ? `bg-gradient-to-r ${filterColors[status]} text-white shadow-md`
+                            : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                            }`}
                     >
-                        {status}
+                        {status === 'all' ? 'All' : status}
                     </button>
                 ))}
             </div>
 
-            {/* 🔍 Empty state if no requests */}
+            {/* Table or Empty */}
             {donationRequests?.data?.length === 0 ? (
-                <div className="py-10 text-center text-gray-500 text-lg border border-dashed rounded-xl border-gray-300 bg-gray-50 dark:bg-gray-800 dark:text-gray-300">
-                    {filterStatus === 'all'
-                        ? 'No donation requests found.'
-                        : `No donation requests found for "${filterStatus}" status.`}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-12 text-center">
+                    <FaTint className="text-5xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400">
+                        {filterStatus === 'all' ? 'No donation requests found.' : `No "${filterStatus}" requests found.`}
+                    </p>
                 </div>
             ) : (
-                <>
-                    {/* Table */}
-                    <div className="overflow-x-auto rounded-2xl shadow border-2 border-gray-300">
-                        <table className="min-w-full divide-y divide-gray-200 text-lg">
-                            <thead className="bg-base-300 text-left text-gray-700 font-semibold">
-                                <tr className="text-center dark:text-white">
-                                    <th className="px-4 py-3">#</th>
-                                    <th className="px-4 py-3">Recipient Name</th>
-                                    <th className="px-4 py-3">Blood Group</th>
-                                    <th className="px-4 py-3">District</th>
-                                    <th className="px-4 py-3">Upazila</th>
-                                    <th className="px-4 py-3">Requester Name</th>
-                                    <th className="px-4 py-3">Donor Name</th>
-                                    <th className="px-4 py-3">Donor Email</th>
-                                    <th className="px-4 py-3">Donation Time</th>
-                                    <th className="px-4 py-3">Status</th>
-                                    {role === 'admin' && <th className="px-4 py-3">Update Status</th>}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-50 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
+                                <tr>
+                                    <th className="px-4 py-3 text-left">#</th>
+                                    <th className="px-4 py-3 text-left">Recipient</th>
+                                    <th className="px-4 py-3 text-center">Blood</th>
+                                    <th className="px-4 py-3 text-left">Location</th>
+                                    <th className="px-4 py-3 text-left">Requester</th>
+                                    <th className="px-4 py-3 text-left">Donor</th>
+                                    <th className="px-4 py-3 text-left">Date</th>
+                                    <th className="px-4 py-3 text-center">Status</th>
+                                    {role === 'admin' && <th className="px-4 py-3 text-center">Update</th>}
                                     {(role === 'admin' || (role === 'volunteer' && needActionForVolunteer)) && (
-                                        <th className="px-4 py-3">Actions</th>
+                                        <th className="px-4 py-3 text-center">Actions</th>
                                     )}
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-200 text-center">
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {donationRequests.data.map((req, index) => (
-                                    <tr key={req._id} className="hover:bg-base-300">
-                                        <td className="px-4 py-2">{(currentPage - 1) * limit + index + 1}</td>
-                                        <td className="px-4 py-2">{req.recipientName}</td>
-                                        <td className="px-4 py-2 font-medium text-red-600">{req.bloodGroup}</td>
-                                        <td className="px-4 py-2">{req.recipientDistrict}</td>
-                                        <td className="px-4 py-2">{req.recipientUpazila}</td>
-                                        <td className="px-4 py-2">{req.requesterName}</td>
-                                        <td className="px-4 py-2">{req.donorName || 'N/A'}</td>
-                                        <td className="px-4 py-2">{req.donorEmail || 'N/A'}</td>
-                                        <td className="px-4 py-2">{req.donationDate} - {req.donationTime}</td>
-                                        <td className="px-4 py-2">
-                                            <span
-                                                className={`px-2 py-1 rounded-full text-xs font-semibold text-white capitalize
-                          ${req.donationStatus === 'pending'
-                                                        ? 'bg-yellow-500'
-                                                        : req.donationStatus === 'inprogress'
-                                                            ? 'bg-blue-500'
-                                                            : req.donationStatus === 'cancelled'
-                                                                ? 'bg-red-600'
-                                                                : 'bg-green-500'
-                                                    }`}
-                                            >
+                                    <tr key={req._id} className="hover:bg-gray-50 dark:hover:bg-gray-900/30 transition-colors">
+                                        <td className="px-4 py-3 text-gray-500">{(currentPage - 1) * limit + index + 1}</td>
+                                        <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">{req.recipientName}</td>
+                                        <td className="px-4 py-3 text-center">
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-bold text-xs">
+                                                <FaTint className="text-[10px]" /> {req.bloodGroup}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">{req.recipientDistrict}, {req.recipientUpazila}</td>
+                                        <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">{req.requesterName}</td>
+                                        <td className="px-4 py-3 text-xs">
+                                            {req.donorName ? (
+                                                <div>
+                                                    <p className="font-medium text-gray-800 dark:text-gray-200">{req.donorName}</p>
+                                                    <p className="text-gray-400">{req.donorEmail}</p>
+                                                </div>
+                                            ) : <span className="text-gray-400">N/A</span>}
+                                        </td>
+                                        <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">{req.donationDate}<br />{req.donationTime}</td>
+                                        <td className="px-4 py-3 text-center">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${statusColors[req.donationStatus] || statusColors.pending}`}>
                                                 {req.donationStatus}
                                             </span>
                                         </td>
 
                                         {role === 'admin' && (
-                                            <td className="px-4 py-2">
+                                            <td className="px-4 py-3 text-center">
                                                 <select
                                                     value={req.donationStatus}
                                                     onChange={(e) => handleStatusChangeByAdmin(req._id, e.target.value)}
-                                                    className="border px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                                    className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-xs focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-100 dark:focus:ring-red-900/30 text-gray-700 dark:text-gray-300"
                                                 >
-                                                    {statuses.map((status) => (
-                                                        <option key={status} value={status}>
-                                                            {status}
-                                                        </option>
-                                                    ))}
+                                                    {statuses.map(s => <option key={s} value={s}>{s}</option>)}
                                                 </select>
                                             </td>
                                         )}
 
                                         {(role === 'admin' || role === 'volunteer') && (
-                                            <td className="space-x-1 space-y-1">
-                                                {role === 'admin' && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => navigate(`/donation-details/${req._id}`)}
-                                                            className="btn btn-sm btn-outline btn-info hover:text-white"
-                                                        >
-                                                            View
-                                                        </button>
-                                                        <button
-                                                            onClick={() => navigate(`/dashboard/edit-donation/${req._id}`)}
-                                                            className="btn btn-sm btn-outline btn-accent hover:text-white"
-                                                        >
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDelete(req._id)}
-                                                            className="btn btn-sm btn-outline btn-error hover:text-white"
-                                                        >
-                                                            Delete
-                                                        </button>
-                                                    </>
-                                                )}
-                                                {req.donationStatus === 'inprogress' && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => handleStatusUpdateAfterInprogress(req._id, 'done')}
-                                                            className="btn btn-sm btn-success hover:text-white"
-                                                        >
-                                                            Done
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleStatusUpdateAfterInprogress(req._id, 'cancelled')}
-                                                            className="btn btn-sm btn-warning hover:text-white"
-                                                        >
-                                                            Cancel
-                                                        </button>
-                                                    </>
-                                                )}
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center justify-center gap-1">
+                                                    {role === 'admin' && (
+                                                        <>
+                                                            <button onClick={() => navigate(`/donation-details/${req._id}`)} className="p-2 rounded-lg text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" title="View">
+                                                                <FaEye className="text-sm" />
+                                                            </button>
+                                                            <button onClick={() => navigate(`/dashboard/edit-donation/${req._id}`)} className="p-2 rounded-lg text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Edit">
+                                                                <FaEdit className="text-sm" />
+                                                            </button>
+                                                            <button onClick={() => handleDelete(req._id)} className="p-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Delete">
+                                                                <FaTrash className="text-sm" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                    {req.donationStatus === 'inprogress' && (
+                                                        <>
+                                                            <button onClick={() => handleStatusUpdateAfterInprogress(req._id, 'done')} className="p-2 rounded-lg text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors" title="Done">
+                                                                <FaCheck className="text-sm" />
+                                                            </button>
+                                                            <button onClick={() => handleStatusUpdateAfterInprogress(req._id, 'cancelled')} className="p-2 rounded-lg text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors" title="Cancel">
+                                                                <FaTimes className="text-sm" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </td>
                                         )}
                                     </tr>
@@ -263,23 +248,31 @@ const AllDonationRequests = () => {
                             </tbody>
                         </table>
                     </div>
+                </div>
+            )}
 
-                    {/* Pagination */}
-                    <div className="flex justify-center mt-6 gap-2">
-                        {[...Array(totalPages).keys()].map((page) => (
-                            <button
-                                key={page}
-                                onClick={() => setCurrentPage(page + 1)}
-                                className={`px-3 py-1 rounded-full border ${currentPage === page + 1
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-black'
-                                    }`}
-                            >
-                                {page + 1}
-                            </button>
-                        ))}
-                    </div>
-                </>
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2">
+                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 transition-all">
+                        <FaChevronLeft className="text-xs" />
+                    </button>
+                    {[...Array(totalPages).keys()].map(page => (
+                        <button
+                            key={page}
+                            onClick={() => setCurrentPage(page + 1)}
+                            className={`w-9 h-9 rounded-lg text-sm font-medium transition-all ${currentPage === page + 1
+                                ? 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-md'
+                                : 'border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                }`}
+                        >
+                            {page + 1}
+                        </button>
+                    ))}
+                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 transition-all">
+                        <FaChevronRight className="text-xs" />
+                    </button>
+                </div>
             )}
         </div>
     );

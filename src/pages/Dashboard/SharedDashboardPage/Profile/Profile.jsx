@@ -6,6 +6,7 @@ import useAxios from '../../../../hooks/useAxios';
 import { useLoaderData } from 'react-router';
 import Swal from 'sweetalert2';
 import useAxiosSecure from '../../../../hooks/useAxiosSecure';
+import { FaUser, FaEnvelope, FaTint, FaMapMarkerAlt, FaCamera, FaEdit, FaTimes, FaShieldAlt } from 'react-icons/fa';
 
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
@@ -21,32 +22,21 @@ const Profile = () => {
     const [selectedDistrictName, setSelectedDistrictName] = useState(null);
     const [upazilasRes, setUpazilasRes] = useState([]);
 
-    const {
-        register,
-        handleSubmit,
-        setValue,
-        reset,
-        watch,
-        formState: { errors },
-    } = useForm();
-
+    const { register, handleSubmit, setValue, reset, watch, formState: { errors } } = useForm();
     const selectedDistrict = watch('district');
 
-    // Update upazilas based on selected district
     useEffect(() => {
         if (selectedDistrict) {
             const found = districts.find(d => d.name === selectedDistrict);
             if (found) {
                 setSelectedDistrictName(found.name);
-                const filterUpazilas = upazilas.filter(u => u.district_id === found.id);
-                setUpazilasRes(filterUpazilas);
+                setUpazilasRes(upazilas.filter(u => u.district_id === found.id));
             } else {
                 setUpazilasRes([]);
             }
         }
     }, [selectedDistrict]);
 
-    // Fetch and set user data
     useEffect(() => {
         const fetchUserInfo = async () => {
             if (!user?.email) return;
@@ -57,19 +47,11 @@ const Profile = () => {
                     setUserInfo(userData);
                     reset(userData);
                     setProfilePic(userData.photoURL);
-
-                    // Prefill district & upazila
-                    // const match = districts.find(d => d.name === userData.district);
-                    // if (match) {
-                    //     setSelectedDistrictName(match.name);
-                    //     setUpazilas(match.upazilas || []);
-                    // }
                 }
             } catch (error) {
                 console.error('Failed to fetch user info:', error);
             }
         };
-
         fetchUserInfo();
     }, [user?.email, axios, reset]);
 
@@ -78,8 +60,6 @@ const Profile = () => {
         document.title = "Dropvein | Profile";
     }, []);
 
-
-    // Upload Image to imgbb
     const handleImageUpload = async (e) => {
         const image = e.target.files[0];
         const formData = new FormData();
@@ -96,18 +76,17 @@ const Profile = () => {
         }
     };
 
-    // Submit Form
     const onSubmit = async (data) => {
         if (!data.name || !data.blood_group || !data.district || !data.upazila) {
             return Swal.fire('Error', 'All fields are required.', 'error');
         }
-
 
         const result = await Swal.fire({
             title: 'Confirm Update',
             text: 'Are you sure you want to update your profile?',
             icon: 'question',
             showDenyButton: true,
+            confirmButtonColor: '#dc2626',
             confirmButtonText: 'Yes, update',
             cancelButtonText: 'Cancel',
             denyButtonText: 'Continue Editing'
@@ -121,15 +100,9 @@ const Profile = () => {
                 upazila: data.upazila,
                 blood_group: data.blood_group,
             };
-
             try {
-                await updateUserProfile({
-                    displayName: updatedInfo.name,
-                    photoURL: profilePic,
-                });
-
+                await updateUserProfile({ displayName: updatedInfo.name, photoURL: profilePic });
                 await axios.patch(`/users/${user.email}`, updatedInfo);
-
                 toast.success('Profile updated!');
                 Swal.fire('Success', 'Your profile has been updated.', 'success');
                 setIsEditing(false);
@@ -143,182 +116,152 @@ const Profile = () => {
         }
     };
 
+    const inputClass = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 dark:focus:ring-red-900/30 transition-all text-gray-800 dark:text-gray-200 text-sm";
+    const labelClass = "block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2";
+    const disabledClass = "bg-gray-100 dark:bg-gray-800 cursor-not-allowed";
+
+    const statusColor = userInfo.status === 'active'
+        ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+        : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
+
+    const roleColor = {
+        admin: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
+        volunteer: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+        donor: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+    };
+
     return (
-        <section className='p-5'>
-            <div className="min-w-10/12 mx-auto bg-base-200 p-6 rounded shadow-md">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold">Profile</h2>
+        <div className="p-6 lg:p-8">
+            <div className="max-w-4xl mx-auto space-y-6">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Profile</h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your personal information</p>
+                    </div>
                     <button
-                        className="btn btn-sm btn-primary"
+                        className={`inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all ${isEditing
+                            ? 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                            : 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/20 hover:from-red-700 hover:to-red-600'
+                            }`}
                         onClick={async () => {
                             if (!isEditing) {
                                 const result = await Swal.fire({
-                                    title: 'Are you sure?',
+                                    title: 'Edit Profile?',
                                     text: "You are about to enter edit mode.",
                                     icon: 'question',
                                     showCancelButton: true,
+                                    confirmButtonColor: '#dc2626',
                                     confirmButtonText: 'Yes, edit',
-                                    cancelButtonText: 'Cancel',
                                 });
-                                if (result.isConfirmed) {
-                                    setIsEditing(true);
-                                }
+                                if (result.isConfirmed) setIsEditing(true);
                             } else {
                                 setIsEditing(false);
                             }
                         }}
                     >
-                        {isEditing ? 'Cancel' : 'Edit'}
+                        {isEditing ? <><FaTimes className="text-xs" /> Cancel</> : <><FaEdit className="text-xs" /> Edit Profile</>}
                     </button>
                 </div>
 
-                <div className="flex flex-col-reverse md:flex-row gap-8">
-                    {/* Left Section - Form */}
-                    <form onSubmit={handleSubmit(onSubmit)} className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        <div>
-                            <label className="block font-medium mb-1">Role</label>
-                            <input
-                                type="text"
-                                value={userInfo?.role}
-                                disabled
-                                className="input input-bordered w-full capitalize"
-                            />
+                {/* Profile Card */}
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    {/* Avatar Section */}
+                    <div className="relative bg-gradient-to-r from-red-600 to-rose-600 p-8 flex flex-col items-center">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                        <div className="relative z-10">
+                            <div className="relative group">
+                                <img
+                                    src={profilePic || userInfo?.photoURL}
+                                    alt="avatar"
+                                    className="w-28 h-28 rounded-full ring-4 ring-white/30 object-cover"
+                                />
+                                {isEditing && (
+                                    <label className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-all">
+                                        <FaCamera className="text-white text-xl" />
+                                        <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                                    </label>
+                                )}
+                            </div>
+                            {uploading && <p className="text-xs text-red-200 mt-2 font-medium">Uploading...</p>}
                         </div>
-
-                        <div>
-                            <label className="block font-medium mb-1">Email</label>
-                            <input
-                                type="email"
-                                value={userInfo?.email}
-                                disabled
-                                className="input input-bordered w-full bg-gray-100"
-                            />
+                        <h3 className="text-xl font-bold text-white mt-4 relative z-10">{userInfo?.name || user?.displayName}</h3>
+                        <p className="text-sm text-red-200 relative z-10">{userInfo?.email}</p>
+                        <div className="flex gap-2 mt-3 relative z-10">
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${statusColor}`}>{userInfo.status}</span>
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${roleColor[userInfo?.role] || roleColor.donor}`}>{userInfo?.role || 'donor'}</span>
                         </div>
+                    </div>
 
-                        <div>
-                            <label className="block font-medium mb-1">Name</label>
-                            <input
-                                type="text"
-                                {...register('name', { required: 'Name is required' })}
-                                disabled={!isEditing}
-                                className="input input-bordered w-full"
-                            />
-                            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
-                        </div>
+                    {/* Form Section */}
+                    <form onSubmit={handleSubmit(onSubmit)} className="p-6 md:p-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label className={labelClass}><FaShieldAlt className="inline text-gray-400 mr-1 text-xs" /> Role</label>
+                                <input type="text" value={userInfo?.role || ''} disabled className={`${inputClass} ${disabledClass} capitalize`} />
+                            </div>
+                            <div>
+                                <label className={labelClass}><FaEnvelope className="inline text-gray-400 mr-1 text-xs" /> Email</label>
+                                <input type="email" value={userInfo?.email || ''} disabled className={`${inputClass} ${disabledClass}`} />
+                            </div>
 
-                        <div>
-                            <label className="block font-medium mb-1">Blood Group</label>
-                            {isEditing ? (
-                                <>
-                                    <select
-                                        {...register('blood_group', { required: 'Blood group is required' })}
-                                        className="select select-bordered w-full"
-                                    >
-                                        <option value="">Select</option>
-                                        {bloodGroups.map(bg => (
-                                            <option key={bg} value={bg}>{bg}</option>
-                                        ))}
+                            <div>
+                                <label className={labelClass}><FaUser className="inline text-red-400 mr-1 text-xs" /> Name</label>
+                                <input type="text" {...register('name', { required: 'Name is required' })} disabled={!isEditing} className={`${inputClass} ${!isEditing ? disabledClass : ''}`} />
+                                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+                            </div>
+
+                            <div>
+                                <label className={labelClass}><FaTint className="inline text-red-400 mr-1 text-xs" /> Blood Group</label>
+                                {isEditing ? (
+                                    <>
+                                        <select {...register('blood_group', { required: 'Blood group is required' })} className={inputClass}>
+                                            <option value="">Select</option>
+                                            {bloodGroups.map(bg => <option key={bg} value={bg}>{bg}</option>)}
+                                        </select>
+                                        {errors.blood_group && <p className="text-red-500 text-xs mt-1">{errors.blood_group.message}</p>}
+                                    </>
+                                ) : (
+                                    <input type="text" value={userInfo?.blood_group || ''} disabled className={`${inputClass} ${disabledClass}`} />
+                                )}
+                            </div>
+
+                            <div>
+                                <label className={labelClass}><FaMapMarkerAlt className="inline text-red-400 mr-1 text-xs" /> District</label>
+                                {isEditing ? (
+                                    <select {...register('district')} className={inputClass}>
+                                        <option value="">Select District</option>
+                                        {districts.map(d => <option key={d.name} value={d.name}>{d.name}</option>)}
                                     </select>
-                                    {errors.blood_group && <p className="text-red-500 text-sm mt-1">{errors.blood_group.message}</p>}
-                                </>
+                                ) : (
+                                    <input type="text" value={userInfo?.district || ''} disabled className={`${inputClass} ${disabledClass}`} />
+                                )}
+                            </div>
 
-                            ) : (
-                                <input
-                                    type="text"
-                                    value={userInfo?.blood_group}
-                                    disabled
-                                    className="input input-bordered w-full"
-                                />
-                            )}
+                            <div>
+                                <label className={labelClass}><FaMapMarkerAlt className="inline text-red-400 mr-1 text-xs" /> Upazila</label>
+                                {isEditing ? (
+                                    <select {...register('upazila')} className={inputClass}>
+                                        <option value="">Select Upazila</option>
+                                        {upazilasRes?.map(u => <option key={u.id} value={u.name}>{u.name}</option>)}
+                                    </select>
+                                ) : (
+                                    <input type="text" value={userInfo?.upazila || ''} disabled className={`${inputClass} ${disabledClass}`} />
+                                )}
+                            </div>
                         </div>
 
-                        <div>
-                            <label className="block font-medium mb-1">District</label>
-                            {isEditing ? (
-                                <select
-                                    {...register('district')}
-                                    className="select select-bordered w-full"
-                                >
-                                    <option value="">Select District</option>
-                                    {districts.map(d => (
-                                        <option key={d.name} value={d.name}>{d.name}</option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <input
-                                    type="text"
-                                    value={userInfo?.district}
-                                    disabled
-                                    className="input input-bordered w-full"
-                                />
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="block font-medium mb-1">Upazila</label>
-                            {isEditing ? (
-                                <select
-                                    {...register('upazila')}
-                                    className="select select-bordered w-full"
-                                >
-                                    <option value="">Select Upazila</option>
-                                    {upazilasRes?.map(u => (
-                                        <option key={u.id} value={u.name}>{u.name}</option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <input
-                                    type="text"
-                                    value={userInfo?.upazila}
-                                    disabled
-                                    className="input input-bordered w-full"
-                                />
-                            )}
-                        </div>
-
-                        {/* Submit Button */}
                         {isEditing && (
-                            <div className="col-span-full">
-                                <button
-                                    type="submit"
-                                    disabled={uploading}
-                                    className="btn btn-primary w-full"
-                                >
+                            <div className="mt-6">
+                                <button type="submit" disabled={uploading} className="w-full py-3.5 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-semibold rounded-xl shadow-lg shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/30 transition-all duration-300">
                                     {uploading ? 'Uploading...' : 'Save Changes'}
                                 </button>
                             </div>
                         )}
                     </form>
-
-                    {/* Right Section - Image and Tags */}
-                    <div className="flex flex-col items-center gap-2">
-                        <span className="badge uppercase badge-success badge-outline px-4 py-1 text-sm mb-2">
-                            {userInfo.status}
-                        </span>
-
-                        <img
-                            src={profilePic || userInfo?.photoURL}
-                            alt="avatar"
-                            className="w-32 h-32 rounded-full border-4 p-1 border-blue-400 object-cover"
-                        />
-
-                        <span className="badge badge-info mt-2 text-white capitalize">
-                            {userInfo?.role || 'User'}
-                        </span>
-
-                        {isEditing && (
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                                className="file-input file-input-bordered file-input-sm mt-4"
-                            />
-                        )}
-                    </div>
                 </div>
             </div>
-        </section>
+        </div>
     );
 };
 

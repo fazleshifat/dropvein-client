@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useLoaderData, useNavigate } from 'react-router';
-import registerImage from '../../../public/assets/login.png';
 import useAuth from '../../hooks/UseAuth';
 import useAxios from '../../hooks/useAxios';
+import { FaTint, FaUser, FaEnvelope, FaLock, FaCamera } from 'react-icons/fa';
 
 const Register = () => {
     const { createUser, updateUserProfile } = useAuth();
@@ -21,7 +21,6 @@ const Register = () => {
         document.title = 'Dropvein | Register';
     }, []);
 
-
     const filteredUpazilas = upazilas?.filter(u => u.district_id == selectedDistrict);
 
     useEffect(() => {
@@ -31,17 +30,13 @@ const Register = () => {
         }
     }, [selectedDistrict, districts]);
 
-
     const onSubmit = async (data) => {
         try {
             const result = await createUser(data.email, data.password);
-            const newUser = result.user;
-
             await updateUserProfile({
                 displayName: data.name,
                 photoURL: profilePic,
             });
-
             const userInfo = {
                 name: data.name,
                 email: data.email,
@@ -53,7 +48,6 @@ const Register = () => {
                 district: selectedDistrictName,
                 upazila: data.upazila,
             };
-
             await axios.post('/users', userInfo);
             navigate('/');
         } catch (error) {
@@ -65,7 +59,6 @@ const Register = () => {
         const image = e.target.files[0];
         const formData = new FormData();
         formData.append('image', image);
-
         const uploadUrl = `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_image_upload_key}`;
         try {
             setUploading(true);
@@ -78,120 +71,167 @@ const Register = () => {
         }
     };
 
+    const inputClass = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 dark:focus:ring-red-900/30 transition-all text-gray-800 dark:text-gray-200 text-sm";
+    const labelClass = "block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5";
+    const selectClass = "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 dark:focus:ring-red-900/30 transition-all text-gray-800 dark:text-gray-200 text-sm";
+
     return (
-        <div className="min-h-[90vh] flex items-center justify-center px-4">
-            <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 shadow-xl rounded-xl overflow-hidden">
-                {/* Left Image */}
-                <div className="bg-base-200 flex items-center justify-center p-6">
-                    <img src={registerImage} alt="Register Visual" className="w-full max-w-md rounded-full" />
+        <div className="min-h-[90vh] flex items-center justify-center animated-gradient px-4 py-12">
+            <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-5 rounded-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-700">
+                {/* Left - Branding (2 cols) */}
+                <div className="hidden md:flex md:col-span-2 flex-col items-center justify-center bg-gradient-to-br from-red-600 to-rose-700 p-10 text-white relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/3 -translate-x-1/3"></div>
+                    <div className="relative z-10 text-center space-y-6">
+                        <div className="w-20 h-20 mx-auto bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-sm float">
+                            <FaTint className="text-4xl text-white" />
+                        </div>
+                        <h2 className="text-2xl font-bold">Join DropVein</h2>
+                        <p className="text-red-100 text-sm leading-relaxed max-w-xs mx-auto">
+                            Create your account and become a part of the life-saving community. Every donor matters.
+                        </p>
+                        <div className="space-y-3 pt-4 text-left text-sm">
+                            {['Track your donations', 'Find nearby donors', 'Save lives regularly'].map((item, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs">✓</div>
+                                    <span className="text-red-100">{item}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
-                {/* Right Form */}
-                <div className="bg-base-100 p-8">
-                <h2 className="text-5xl text-gray-400 font-semibold mb-6 text-center">Account Register</h2>
+                {/* Right Form (3 cols) */}
+                <div className="md:col-span-3 bg-white dark:bg-gray-800 p-6 md:p-8">
+                    <div className="text-center mb-6">
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-1">Create Account</h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Fill in your details to get started</p>
+                    </div>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Profile Upload */}
-                        <div className="col-span-2 flex flex-col items-center gap-2">
-                            <label className="label">Profile Picture</label>
-                            <label className="relative cursor-pointer">
+                        <div className="col-span-2 flex flex-col items-center gap-2 mb-2">
+                            <label className="relative cursor-pointer group">
                                 <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" required />
-                                {
-                                    profilePic
-                                        ? <img src={profilePic} className="w-28 h-28 object-cover rounded-full border-2 border-primary" />
-                                        : <div className="w-28 h-28 flex items-center justify-center bg-base-200 border-dashed border-2 rounded-full">
-                                            <span className="text-xs text-gray-500 text-center">Upload Photo</span>
+                                {profilePic ? (
+                                    <div className="relative">
+                                        <img src={profilePic} className="w-24 h-24 object-cover rounded-full ring-3 ring-red-200 dark:ring-red-800" />
+                                        <div className="absolute inset-0 bg-black/30 rounded-full opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                                            <FaCamera className="text-white text-lg" />
                                         </div>
-                                }
+                                    </div>
+                                ) : (
+                                    <div className="w-24 h-24 flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-700 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-full group-hover:border-red-400 transition-all">
+                                        <FaCamera className="text-gray-400 text-lg mb-1" />
+                                        <span className="text-[10px] text-gray-400">Upload</span>
+                                    </div>
+                                )}
                             </label>
-                            {uploading && <p className="text-blue-500 text-sm">Uploading...</p>}
-                            {profilePic && <p className="text-green-500 text-sm">Image uploaded!</p>}
+                            {uploading && <span className="text-xs text-blue-500 font-medium">Uploading...</span>}
+                            {profilePic && <span className="text-xs text-green-500 font-medium">Uploaded!</span>}
                         </div>
 
                         {/* Name */}
-                        <div className='col-span-2'>
-                            <label className="label">Name</label>
-                            <input {...register('name', { required: true })} type="text" placeholder="Your Name" className="input input-bordered w-full" />
-                            {errors.name && <p className="text-red-500 text-sm">Name is required</p>}
+                        <div className="col-span-2">
+                            <label className={labelClass}>Full Name</label>
+                            <div className="relative">
+                                <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
+                                <input {...register('name', { required: true })} type="text" placeholder="Your full name" className={`${inputClass} pl-10`} />
+                            </div>
+                            {errors.name && <p className="text-red-500 text-xs mt-1">Name is required</p>}
                         </div>
 
                         {/* Email */}
-                        <div className='col-span-2'>
-                            <label className="label">Email</label>
-                            <input {...register('email', { required: true })} type="email" placeholder="Email" className="input input-bordered w-full" />
-                            {errors.email && <p className="text-red-500 text-sm">Email is required</p>}
+                        <div className="col-span-2">
+                            <label className={labelClass}>Email</label>
+                            <div className="relative">
+                                <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
+                                <input {...register('email', { required: true })} type="email" placeholder="your@email.com" className={`${inputClass} pl-10`} />
+                            </div>
+                            {errors.email && <p className="text-red-500 text-xs mt-1">Email is required</p>}
                         </div>
 
                         {/* Blood Group */}
-                        <div className='col-span-2'>
-                            <label className="label">Blood Group</label>
-                            <select {...register('blood_group', { required: true })} className="select select-bordered w-full">
+                        <div className="col-span-2">
+                            <label className={labelClass}>Blood Group</label>
+                            <select {...register('blood_group', { required: true })} className={selectClass}>
                                 <option value="">Select your blood group</option>
                                 {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(group => (
                                     <option key={group} value={group}>{group}</option>
                                 ))}
                             </select>
-                            {errors.blood_group && <p className="text-red-500 text-sm">Blood group is required</p>}
+                            {errors.blood_group && <p className="text-red-500 text-xs mt-1">Blood group is required</p>}
                         </div>
 
                         {/* District */}
                         <div>
-                            <label className="label">District</label>
+                            <label className={labelClass}>District</label>
                             <select
                                 {...register('district', { required: true })}
                                 onChange={(e) => setSelectedDistrict(e.target.value)}
-                                className="select select-bordered w-full"
+                                className={selectClass}
                             >
-                                <option value="">Select a district</option>
+                                <option value="">Select district</option>
                                 {districts?.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                             </select>
-                            {errors.district && <p className="text-red-500 text-sm">District is required</p>}
+                            {errors.district && <p className="text-red-500 text-xs mt-1">District is required</p>}
                         </div>
 
                         {/* Upazila */}
                         <div>
-                            <label className="label">Upazila</label>
-                            <select {...register('upazila', { required: true })} className="select select-bordered w-full" disabled={!selectedDistrict}>
-                                <option value="">Select an upazila</option>
+                            <label className={labelClass}>Upazila</label>
+                            <select {...register('upazila', { required: true })} className={selectClass} disabled={!selectedDistrict}>
+                                <option value="">Select upazila</option>
                                 {filteredUpazilas?.map(u => <option key={u.id} value={u.name}>{u.name}</option>)}
                             </select>
-                            {errors.upazila && <p className="text-red-500 text-sm">Upazila is required</p>}
+                            {errors.upazila && <p className="text-red-500 text-xs mt-1">Upazila is required</p>}
                         </div>
 
                         {/* Password */}
                         <div>
-                            <label className="label">Password</label>
-                            <input {...register('password', { required: true, minLength: 6 })} type="password" className="input input-bordered w-full" />
-                            {errors.password?.type === 'required' && <p className="text-red-500 text-sm">Password is required</p>}
-                            {errors.password?.type === 'minLength' && <p className="text-red-500 text-sm">Minimum 6 characters</p>}
+                            <label className={labelClass}>Password</label>
+                            <div className="relative">
+                                <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
+                                <input {...register('password', { required: true, minLength: 6 })} type="password" placeholder="Min 6 chars" className={`${inputClass} pl-10`} />
+                            </div>
+                            {errors.password?.type === 'required' && <p className="text-red-500 text-xs mt-1">Password is required</p>}
+                            {errors.password?.type === 'minLength' && <p className="text-red-500 text-xs mt-1">Minimum 6 characters</p>}
                         </div>
 
                         {/* Confirm Password */}
                         <div>
-                            <label className="label">Confirm Password</label>
-                            <input
-                                {...register('confirm_password', {
-                                    required: true,
-                                    validate: value => value === watch('password') || 'Passwords do not match'
-                                })}
-                                type="password"
-                                className="input input-bordered w-full"
-                            />
-                            {errors.confirm_password && <p className="text-red-500 text-sm">{errors.confirm_password.message}</p>}
+                            <label className={labelClass}>Confirm Password</label>
+                            <div className="relative">
+                                <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
+                                <input
+                                    {...register('confirm_password', {
+                                        required: true,
+                                        validate: value => value === watch('password') || 'Passwords do not match'
+                                    })}
+                                    type="password"
+                                    placeholder="Re-enter password"
+                                    className={`${inputClass} pl-10`}
+                                />
+                            </div>
+                            {errors.confirm_password && <p className="text-red-500 text-xs mt-1">{errors.confirm_password.message || 'Required'}</p>}
                         </div>
 
                         {/* Submit */}
-                        <div className="col-span-2">
-                            <button type="submit" className="btn btn-primary w-full" disabled={uploading}>
-                                {uploading ? 'Please wait...' : 'Register'}
+                        <div className="col-span-2 pt-2">
+                            <button
+                                type="submit"
+                                className="w-full py-3.5 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white font-semibold rounded-xl shadow-lg shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/30 transition-all duration-300"
+                                disabled={uploading}
+                            >
+                                {uploading ? 'Please wait...' : 'Create Account'}
                             </button>
                         </div>
                     </form>
 
-                    <p className="mt-4 text-center text-sm">
+                    <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
                         Already have an account?{' '}
-                        <Link to="/login" className="text-red-600 font-semibold hover:underline">
-                            Login
+                        <Link to="/login" className="text-red-600 dark:text-red-400 font-semibold hover:underline">
+                            Sign In
                         </Link>
                     </p>
                 </div>

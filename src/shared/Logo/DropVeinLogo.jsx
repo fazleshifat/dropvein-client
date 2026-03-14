@@ -3,14 +3,17 @@ import { Link } from 'react-router';
 
 const DropVeinLogo = () => {
     return (
-        <>
-            <Link to='/'>
-                <div className='flex items-end justify-center gap-3'>
-                    <img src="/assets/login.png" className='w-10 rounded-full' alt="logo" />
-                    <p className='text-3xl text-gray-500 font-bold -ml-3'>Dropvein</p>
-                </div>
-            </Link>
-        </>
+        <Link to='/' className="flex items-center gap-2 group">
+            <img
+                src="/assets/login.png"
+                className="w-9 h-9 rounded-full ring-2 ring-red-100 dark:ring-red-900/40 group-hover:ring-red-300 dark:group-hover:ring-red-700 transition-all"
+                alt="logo"
+            />
+            <span className="text-xl font-bold tracking-tight">
+                <span className="text-gray-800 dark:text-gray-100">Drop</span>
+                <span className="gradient-text">vein</span>
+            </span>
+        </Link>
     );
 };
 

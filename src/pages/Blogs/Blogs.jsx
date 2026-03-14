@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import useAxios from '../../hooks/useAxios';
 import Spinner from '../../components/Spinner';
+import { FaArrowRight, FaUser, FaCalendar } from 'react-icons/fa';
 
 const Blogs = () => {
     const axios = useAxios();
@@ -20,45 +21,70 @@ const Blogs = () => {
         }
     });
 
-    if (isLoading) {
-        return <Spinner></Spinner>;
-    }
+    if (isLoading) return <Spinner />;
 
     if (isError) {
-        return <div className="text-center text-red-500 py-8">Failed to load blogs.</div>;
-    }
-
-    if (blogs.length === 0) {
-        return <div className="text-center text-gray-600 text-lg py-10">No published blogs available.</div>;
+        return (
+            <div className="min-h-[60vh] flex items-center justify-center">
+                <p className="text-red-500 text-lg font-medium">Failed to load blogs.</p>
+            </div>
+        );
     }
 
     return (
-        <section className="p-6 min-h-[90vh]">
-            <div className="p-6 rounded-md">
-                <h2 className="text-3xl font-semibold mb-6 text-center text-gray-500">Blogs</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {blogs.map(blog => (
-                        <div key={blog._id} className="flex flex-col justify-between relative border-3 border-gray-200 rounded-lg p-4 bg-base-100 shadow hover:shadow-lg transition">
-                            <img src={blog.thumbnail} alt={blog.title} className="w-full h-40 object-cover rounded mb-3" />
-                            <h3 className="text-lg font-bold mb-1">{blog.title}</h3>
-                            <span className="absolute bg-base-300 p-2 rounded-2xl text-gray-600 dark:bg-gray-400 text-sm right-5 top-46.5 font-semibold uppercase">{blog.status}</span>
-                            <p className="text-sm text-gray-600 mb-1">By {blog.authorName}</p>
-                            <p className="text-sm text-gray-600 mb-1">Email: {blog.authorEmail}</p>
-                            <p className="text-sm text-gray-600 mb-1">Date: {new Date(blog.createdAt).toDateString()}</p>
-                            <div
-                                className="text-sm text-gray-600 font-semibold bg-base-200 p-3 rounded-lg mb-2"
-                                dangerouslySetInnerHTML={{ __html: blog.content }}
-                            />
-                            <div className="mt-2 text-right">
-                                <Link to={`/blogs/${blog._id}`}>
-                                    <button className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700 transition">
-                                        View
-                                    </button>
-                                </Link>
-                            </div>
-                        </div>
-                    ))}
+        <section className="py-16 px-6 min-h-[90vh] bg-gray-50 dark:bg-gray-900">
+            <div className="max-w-7xl mx-auto">
+                <div className="text-center mb-12">
+                    <span className="inline-block px-4 py-1.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-medium mb-4">
+                        Our Blog
+                    </span>
+                    <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                        Latest <span className="gradient-text">Articles</span>
+                    </h2>
+                    <div className="section-divider"></div>
                 </div>
+
+                {blogs.length === 0 ? (
+                    <p className="text-center text-gray-500 dark:text-gray-400 text-lg py-10">No published blogs available.</p>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {blogs.map(blog => (
+                            <article key={blog._id} className="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 card-hover flex flex-col">
+                                <div className="relative overflow-hidden">
+                                    <img
+                                        src={blog.thumbnail}
+                                        alt={blog.title}
+                                        className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                    <div className="absolute top-4 left-4">
+                                        <span className="px-3 py-1 rounded-full bg-white/90 dark:bg-gray-900/90 text-xs font-semibold uppercase text-red-600 dark:text-red-400 backdrop-blur-sm">
+                                            {blog.status}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="p-6 flex flex-col flex-1">
+                                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3 line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                                        {blog.title}
+                                    </h3>
+                                    <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mb-4">
+                                        <span className="flex items-center gap-1"><FaUser className="text-red-400" /> {blog.authorName}</span>
+                                        <span className="flex items-center gap-1"><FaCalendar className="text-red-400" /> {new Date(blog.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                    <div
+                                        className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3 mb-4 flex-1"
+                                        dangerouslySetInnerHTML={{ __html: blog.content }}
+                                    />
+                                    <Link
+                                        to={`/blogs/${blog._id}`}
+                                        className="inline-flex items-center gap-2 text-sm font-semibold text-red-600 dark:text-red-400 hover:gap-3 transition-all duration-300 mt-auto"
+                                    >
+                                        Read More <FaArrowRight className="text-xs" />
+                                    </Link>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                )}
             </div>
         </section>
     );

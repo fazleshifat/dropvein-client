@@ -1,57 +1,126 @@
 import React from 'react';
-import { FaFacebookF, FaInstagram, FaTwitter, FaLinkedinIn } from 'react-icons/fa';
+import { FaFacebookF, FaInstagram, FaTwitter, FaLinkedinIn, FaHeart, FaTint } from 'react-icons/fa';
 import { Link } from 'react-router';
-import DropVeinLogo from '../Logo/DropVeinLogo';
 
 const Footer = () => {
     return (
-        <footer className="bg-base-300 pt-12 pb-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-4 gap-8">
+        <footer className="relative bg-gray-900 dark:bg-gray-950 text-gray-300 overflow-hidden">
+            {/* Top accent line */}
+            <div className="h-1 w-full bg-gradient-to-r from-red-600 via-rose-500 to-red-600"></div>
 
-                {/* Branding */}
-                <div className='flex flex-col items-start'>
-                    <DropVeinLogo></DropVeinLogo>
-                    <p className="text-sm">
-                        Saving lives, one drop at a time. Join the life-saving mission today.
-                    </p>
-                </div>
+            {/* Decorative blob */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-red-900/5 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
 
-                {/* Navigation */}
-                <div>
-                    <h3 className="text-xl font-semibold text-gray-500 mb-2">Quick Links</h3>
-                    <ul className="space-y-2 text-sm">
-                        <li><Link to="/" className="hover:text-red-400 transition">Home</Link></li>
-                        <li><Link to="/search-donors" className="hover:text-red-400 transition">Search Donors</Link></li>
-                        <li><Link to="/register" className="hover:text-red-400 transition">Join as Donor</Link></li>
-                        {/* <li><Link to="/about" className="hover:text-red-400 transition">About Us</Link></li> */}
-                    </ul>
-                </div>
+            <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-16 pb-8 relative z-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+                    {/* Branding */}
+                    <div className="sm:col-span-2 lg:col-span-1">
+                        <Link to="/" className="inline-flex items-center gap-2 mb-4 group">
+                            <div className="relative">
+                                <img src="/assets/login.png" className="w-10 h-10 rounded-full ring-2 ring-red-800 group-hover:ring-red-600 transition-all" alt="logo" />
+                            </div>
+                            <span className="text-2xl font-bold">
+                                <span className="text-white">Drop</span>
+                                <span className="text-red-500">vein</span>
+                            </span>
+                        </Link>
+                        <p className="text-sm text-gray-400 leading-relaxed mb-6 max-w-xs">
+                            Saving lives, one drop at a time. Join the life-saving mission today and become a part of something bigger.
+                        </p>
+                        <div className="flex gap-3">
+                            {[
+                                { icon: FaFacebookF, href: '#', hover: 'hover:bg-blue-600' },
+                                { icon: FaInstagram, href: '#', hover: 'hover:bg-pink-600' },
+                                { icon: FaTwitter, href: '#', hover: 'hover:bg-sky-500' },
+                                { icon: FaLinkedinIn, href: '#', hover: 'hover:bg-blue-500' },
+                            ].map((item, i) => (
+                                <a
+                                    key={i}
+                                    href={item.href}
+                                    className={`w-10 h-10 rounded-xl bg-gray-800 flex items-center justify-center text-gray-400 ${item.hover} hover:text-white transition-all duration-300 hover:-translate-y-1`}
+                                >
+                                    <item.icon className="text-sm" />
+                                </a>
+                            ))}
+                        </div>
+                    </div>
 
-                {/* Contact Info */}
-                <div>
-                    <h3 className="text-xl font-semibold text-gray-500 mb-2">Contact Us</h3>
-                    <ul className="text-sm space-y-1">
-                        <li>Email: info@dropvein.org</li>
-                        <li>Phone: +880 1234 567 890</li>
-                        <li>Location: Chittagong, Bangladesh</li>
-                    </ul>
-                </div>
+                    {/* Quick Links */}
+                    <div>
+                        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                            Quick Links
+                        </h3>
+                        <ul className="space-y-3 text-sm">
+                            {[
+                                { to: '/', label: 'Home' },
+                                { to: '/search-donors', label: 'Search Donors' },
+                                { to: '/blood-donation-requests', label: 'Donation Requests' },
+                                { to: '/blogs', label: 'Blog' },
+                                { to: '/register', label: 'Join as Donor' },
+                            ].map((link, i) => (
+                                <li key={i}>
+                                    <Link to={link.to} className="text-gray-400 hover:text-red-400 hover:translate-x-1 inline-block transition-all duration-200">
+                                        {link.label}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
 
-                {/* Social Links */}
-                <div>
-                    <h3 className="text-xl font-semibold text-gray-500 mb-2">Follow Us</h3>
-                    <div className="flex space-x-4 text-lg">
-                        <a href="#" className="hover:text-blue-500 transition"><FaFacebookF /></a>
-                        <a href="#" className="hover:text-pink-500 transition"><FaInstagram /></a>
-                        <a href="#" className="hover:text-sky-400 transition"><FaTwitter /></a>
-                        <a href="#" className="hover:text-blue-400 transition"><FaLinkedinIn /></a>
+                    {/* Contact Info */}
+                    <div>
+                        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                            Contact Us
+                        </h3>
+                        <ul className="text-sm space-y-3 text-gray-400">
+                            <li className="flex items-start gap-2">
+                                <span className="text-red-500 mt-0.5">@</span>
+                                info@dropvein.org
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-red-500 mt-0.5">#</span>
+                                +880 1234 567 890
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <span className="text-red-500 mt-0.5">&bull;</span>
+                                Chittagong, Bangladesh
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* Newsletter */}
+                    <div>
+                        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                            Stay Updated
+                        </h3>
+                        <p className="text-sm text-gray-400 mb-4">
+                            Subscribe to get the latest updates on blood donation drives.
+                        </p>
+                        <form className="flex gap-2">
+                            <input
+                                type="email"
+                                placeholder="Your email"
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-gray-800 border border-gray-700 text-sm text-gray-200 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500/30 transition-all"
+                            />
+                            <button
+                                type="submit"
+                                className="px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-xl text-sm font-medium hover:from-red-700 hover:to-red-600 transition-all shadow-lg shadow-red-900/30"
+                            >
+                                <FaTint />
+                            </button>
+                        </form>
                     </div>
                 </div>
-            </div>
 
-            {/* Bottom Bar */}
-            <div className="mt-10 border-t border-gray-700 pt-4 text-center text-sm text-gray-500">
-                © {new Date().getFullYear()} DropVein. All rights reserved.
+                {/* Bottom Bar */}
+                <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <p className="text-sm text-gray-500">
+                        &copy; {new Date().getFullYear()} DropVein. All rights reserved.
+                    </p>
+                    <p className="text-sm text-gray-500 flex items-center gap-1">
+                        Made with <FaHeart className="text-red-500 text-xs" /> for humanity
+                    </p>
+                </div>
             </div>
         </footer>
     );
