@@ -45,10 +45,10 @@ const Login = () => {
     }
 
     return (
-        <div className="min-h-[85vh] flex items-center justify-center animated-gradient px-4 py-12">
+        <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
             <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 rounded-2xl overflow-hidden shadow-2xl border border-gray-100 dark:border-gray-700">
                 {/* Left - Branding */}
-                <div className="hidden md:flex flex-col items-center justify-center bg-gradient-to-br from-red-600 to-rose-700 p-12 text-white relative overflow-hidden">
+                <div className="hidden md:flex flex-col items-center justify-center bg-gradient-to-br from-red-700 to-rose-500 p-12 text-white relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
                     <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/3 -translate-x-1/3"></div>
                     <div className="relative z-10 text-center space-y-6">
